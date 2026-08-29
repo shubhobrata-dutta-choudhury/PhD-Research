@@ -63,7 +63,7 @@ The preliminary profiling shows a severe degradation in calibration and statisti
 ### Core Proposed Novelty
 Rather than using static global scalar scaling, we propose a **Dynamic Contextual Calibration Layer** parameterized by a lightweight Reinforcement Learning (RL) agent. The RL agent observes local quantization entropy and dynamically shifts the non-conformity threshold per sample to maintain exact $1-\alpha$ coverage.
 
-┌──────────────────────────────────────────────┐
+              ┌──────────────────────────────────────────────┐
               │           Input Medical Scan (x)             │
               └──────────────────────┬───────────────────────┘
                                      │
