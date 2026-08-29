@@ -121,12 +121,12 @@ Rather than using static global scalar scaling, we propose a **Dynamic Contextua
 ## 5. Execution Roadmap, IP & Publication Strategy
 
 ### 12-Week Sprint Schedule
-Week  1 -  2: Finalize baseline benchmarks & quantization profiling on BUSI & ISIC datasets.
-Week  3 -  4: Complete literature integration & related works framing.
-Week  5 -  8: Formulate and train the RL calibration agent; tune multi-objective reward weights.
-Week  9 - 10: Run full ablation matrix (INT4 vs INT8 vs FP16; out-of-distribution noise tests).
-Week 10 - 11: Draft Provisional Patent Application for the dynamic edge calibration method.
-Week 11 - 12: Finalize manuscript drafting, figures, and target journal formatting.
+* Week  1 -  2: Finalize baseline benchmarks & quantization profiling on BUSI & ISIC datasets.
+* Week  3 -  4: Complete literature integration & related works framing.
+* Week  5 -  8: Formulate and train the RL calibration agent; tune multi-objective reward weights.
+* Week  9 - 10: Run full ablation matrix (INT4 vs INT8 vs FP16; out-of-distribution noise tests).
+* Week 10 - 11: Draft Provisional Patent Application for the dynamic edge calibration method.
+* Week 11 - 12: Finalize manuscript drafting, figures, and target journal formatting.
 
 ### Planned Submissions & Deliverables
 * **Primary Journal Targets:**
