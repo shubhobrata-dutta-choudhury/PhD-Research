@@ -62,3 +62,86 @@ The preliminary profiling shows a severe degradation in calibration and statisti
 
 ### Core Proposed Novelty
 Rather than using static global scalar scaling, we propose a **Dynamic Contextual Calibration Layer** parameterized by a lightweight Reinforcement Learning (RL) agent. The RL agent observes local quantization entropy and dynamically shifts the non-conformity threshold per sample to maintain exact $1-\alpha$ coverage.
+
+┌──────────────────────────────────────────────┐
+              │           Input Medical Scan (x)             │
+              └──────────────────────┬───────────────────────┘
+                                     │
+                                     ▼
+              ┌──────────────────────────────────────────────┐
+              │    Frozen INT8 MobileNetV3-UNet Backbone     │
+              └──────────────────────┬───────────────────────┘
+                                     │
+             ┌───────────────────────┴───────────────────────┐
+             │                                               │
+             ▼                                               ▼
+ ┌────────────────────────┐                    ┌───────────────────────────┐
+ │ Quantized Logits z(x)  │                    │  Feature & Entropy State  │
+ └───────────┬────────────┘                    └─────────────┬─────────────┘
+             │                                               │
+             │                                               ▼
+             │                                 ┌───────────────────────────┐
+             │                                 │   Lightweight RL Agent    │
+             │                                 │ (Actor: Policy Network π) │
+             │                                 └─────────────┬─────────────┘
+             │                                               │
+             │                                               ▼
+             │                                 ┌───────────────────────────┐
+             │                                 │ Dynamic Quantile Shift Δq │
+             │                                 └─────────────┬─────────────┘
+             │                                               │
+             └───────────────────────┬───────────────────────┘
+                                     │
+                                     ▼
+              ┌──────────────────────────────────────────────┐
+              │    Calibrated Prediction Sets C(x; q_hat)    │
+              │         P(Y ∈ C(x)) ≥ 1 - α (90.0%)          │
+              └──────────────────────────────────────────────┘
+
+### Mathematical Formulation & RL Integration
+* **State Space ($S$):** Low-dimensional summary statistics extracted from the quantized output:
+  $$s_t = \left[ \mathcal{H}(z_{\text{quant}}), \text{Var}(z_{\text{quant}}), \mu_{\text{softmax}}, \text{SpatialGradient}(z_{\text{quant}}) \right]$$
+  where $\mathcal{H}$ represents the spatial entropy distribution across the segmentation boundary.
+* **Action Space ($A$):** Continuous scalar modification $\Delta \hat{q} \in [-0.2, +0.2]$ applied to the nominal calibration quantile $\hat{q}_{\text{base}}$:
+  $$\hat{q}_{\text{effective}}(x) = \hat{q}_{\text{base}} + \pi_\theta(s_t)$$
+* **Multi-Objective Reward Function ($R$):**
+  $$R(s_t, a_t) = -\lambda_1 \cdot \max\left(0, (1 - \alpha) - \text{Cov}(\mathcal{C}(x))\right) - \lambda_2 \cdot |\mathcal{C}(x)|$$
+  * *Constraint Penalty:* Heavily penalizes any empirical coverage falling below $1 - \alpha = 0.90$.
+  * *Efficiency Incentive:* Minimizes the total cardinality (average pixel area) of the prediction set $|\mathcal{C}(x)|$ to avoid trivial, overly large sets.
+
+### Target Objectives & Expected Results
+* **Restored Coverage:** Achieve $\ge 90.0\% \pm 0.5\%$ empirical coverage on $\text{INT8}$ models across ISIC and BUSI datasets.
+* **Low Computational Overhead:** Ensure the RL calibration policy requires $< 0.1\text{M}$ parameters and $< 2\text{ ms}$ latency overhead on simulated ARM/NPU runtimes.
+* **Quantization Robustness:** Validate performance across uniform $\text{INT8}$, mixed-precision ($\text{FP16}/\text{INT8}$), and aggressive $\text{INT4}$ regimes.
+
+---
+
+## 5. Execution Roadmap, IP & Publication Strategy
+
+### 12-Week Sprint Schedule
+Week  1 -  2: Finalize baseline benchmarks & quantization profiling on BUSI & ISIC datasets.
+Week  3 -  4: Complete literature integration & related works framing.
+Week  5 -  8: Formulate and train the RL calibration agent; tune multi-objective reward weights.
+Week  9 - 10: Run full ablation matrix (INT4 vs INT8 vs FP16; out-of-distribution noise tests).
+Week 10 - 11: Draft Provisional Patent Application for the dynamic edge calibration method.
+Week 11 - 12: Finalize manuscript drafting, figures, and target journal formatting.
+
+### Planned Submissions & Deliverables
+* **Primary Journal Targets:**
+  * *Pattern Recognition Letters* (Elsevier) — Rapid review, focused methodological novelty.
+  * *IEEE Access* — High visibility, applied edge AI and benchmarking focus.
+  * *Computers in Biology and Medicine* (Elsevier) — Clinical safety and medical validation emphasis.
+* **Intellectual Property (IP):**
+  * File a **Provisional Patent Application**: *"Method and System for Dynamic Contextual Conformal Calibration in Quantized Neural Processing Units."*
+* **Open Science:** Release an open-source PyTorch benchmarking toolbox (`Edge-Conformal-Medical`) alongside an arXiv preprint upon submission.
+
+---
+
+## 6. Key References
+
+1. **Angelopoulos, A. N., & Bates, S. (2023).** *A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification.* arXiv preprint arXiv:2107.07511.
+2. **Tibshirani, R. J., Foygel Barber, R., Candès, E., & Ramdas, A. (2019).** *Conformal Prediction Under Covariate Shift.* Advances in Neural Information Processing Systems (NeurIPS), 32.
+3. **Guo, C., Pleiss, G., Sun, Y., & Weinberger, K. Q. (2017).** *On Calibration of Modern Neural Networks.* International Conference on Machine Learning (ICML), PMLR, 1321–1330.
+4. **Jacob, B., et al. (2018).** *Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference.* IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2704–2713.
+5. **Bellotti, V. (2024).** *Morphological Prediction Sets for Medical Image Segmentation with Conformal Guarantees.* Medical Image Computing and Computer Assisted Intervention (MICCAI).
+6. **Recent Literature (August 2026).** *Conformalized Large Language Models under Configuration Shift.* arXiv preprint.
