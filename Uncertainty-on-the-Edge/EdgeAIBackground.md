@@ -63,15 +63,7 @@ The preliminary profiling shows a severe degradation in calibration and statisti
 ### Core Proposed Novelty
 Rather than using static global scalar scaling, we propose a **Dynamic Contextual Calibration Layer** parameterized by a lightweight Reinforcement Learning (RL) agent. The RL agent observes local quantization entropy and dynamically shifts the non-conformity threshold per sample to maintain exact $1-\alpha$ coverage.
 
-```mermaid
-graph TD
-    A["Input Medical Scan (x)"] --> B["Frozen INT8 MobileNetV3-UNet Backbone"]
-    B --> C["Quantized Logits z(x)"]
-    B --> D["Feature & Entropy State (s_t)"]
-    D --> E["Lightweight RL Agent<br/>(Actor: Policy Network π)"]
-    E --> F["Dynamic Quantile Shift (Δq)"]
-    C --> G["Calibrated Prediction Sets C(x; q_hat)<br/>P(Y ∈ C(x)) ≥ 1 - α (90.0%)"]
-    F --> G
+```text
 
               ┌──────────────────────────────────────────────┐
               │           Input Medical Scan (x)             │
@@ -107,7 +99,7 @@ graph TD
               │    Calibrated Prediction Sets C(x; q_hat)    │
               │         P(Y ∈ C(x)) ≥ 1 - α (90.0%)          │
               └──────────────────────────────────────────────┘
-
+```
 ### Mathematical Formulation & RL Integration
 * **State Space ($S$):** Low-dimensional summary statistics extracted from the quantized output:
   $$s_t = \left[ \mathcal{H}(z_{\text{quant}}), \text{Var}(z_{\text{quant}}), \mu_{\text{softmax}}, \text{SpatialGradient}(z_{\text{quant}}) \right]$$
